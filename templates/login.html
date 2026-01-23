@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | MediCare Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-lg-5 col-md-7">
+
+        <!-- Login Card -->
+        <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            
+            <!-- Card Header with Gradient -->
+            <div class="card-header text-white text-center py-4" 
+                 style="background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%); border: none;">
+                <div class="mb-3">
+                    <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Welcome Back</h3>
+                <p class="mb-0 small opacity-75">Sign in to access your account</p>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body p-5">
+                
+                <!-- Display Error Messages if any -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Username Field -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" style="color: var(--lavender-dark);">
+                            <i class="bi bi-person-fill me-2"></i>Username
+                        </label>
+                        <input
+                            type="text"
+                            name="username"
+                            class="form-control form-control-lg"
+                            placeholder="Enter your username"
+                            style="border-radius: 12px; border: 2px solid var(--lavender-light);"
+                            required
+                            autofocus
+                        >
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" style="color: var(--lavender-dark);">
+                            <i class="bi bi-lock-fill me-2"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input
+                                type="password"
+                                name="password"
+                                id="passwordField"
+                                class="form-control form-control-lg"
+                                placeholder="Enter your password"
+                                style="border-radius: 12px 0 0 12px; border: 2px solid var(--lavender-light); border-right: none;"
+                                required
+                            >
+                            <button 
+                                class="btn btn-outline-secondary" 
+                                type="button"
+                                onclick="togglePassword()"
+                                style="border-radius: 0 12px 12px 0; border: 2px solid var(--lavender-light); border-left: none;">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label small text-muted" for="rememberMe">
+                                Remember me
+                            </label>
+                        </div>
+                        <a href="#" class="small" style="color: var(--lavender-primary); text-decoration: none;">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-lavender btn-lg py-3" 
+                                style="border-radius: 12px; font-weight: 600;">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Sign In
+                        </button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="text-center my-4">
+                        <span class="text-muted small">or continue with</span>
+                    </div>
+
+                    <!-- Admin Panel Link -->
+                    <div class="d-grid">
+                        <a href="/admin/" class="btn btn-outline-lavender btn-lg py-3" 
+                           style="border-radius: 12px; font-weight: 600;">
+                            <i class="bi bi-shield-lock-fill me-2"></i>
+                            Admin Portal
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer text-center py-3" style="background-color: #f8f9fa; border: none;">
+                <p class="mb-0 small text-muted">
+                    Don't have an account? 
+                    <a href="#" style="color: var(--lavender-primary); text-decoration: none; font-weight: 600;">
+                        Contact Administrator
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Security Notice -->
+        <div class="text-center mt-4">
+            <p class="small text-muted">
+                <i class="bi bi-shield-check me-1" style="color: var(--lavender-primary);"></i>
+                Your connection is secure and encrypted
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Side Illustration (Optional - visible on larger screens) -->
+    <div class="col-lg-4 d-none d-lg-block text-center">
+        <div class="p-4">
+            <i class="bi bi-hospital-fill" 
+               style="font-size: 12rem; color: var(--lavender-light); opacity: 0.6;"></i>
+            <h4 class="mt-4 fw-bold" style="color: var(--lavender-dark);">
+                Secure Access Portal
+            </h4>
+            <p class="text-muted">
+                Manage your pharmacy operations with confidence and ease
+            </p>
+            <div class="mt-4">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="bi bi-check-circle-fill me-2" style="color: var(--lavender-primary); font-size: 1.5rem;"></i>
+                    <span class="text-muted">Multi-factor Authentication</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="bi bi-check-circle-fill me-2" style="color: var(--lavender-primary); font-size: 1.5rem;"></i>
+                    <span class="text-muted">End-to-End Encryption</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-check-circle-fill me-2" style="color: var(--lavender-primary); font-size: 1.5rem;"></i>
+                    <span class="text-muted">24/7 System Monitoring</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword() {
+        const passwordField = document.getElementById('passwordField');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('bi-eye');
+            toggleIcon.classList.add('bi-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        }
+    }
+</script>
+
+<style>
+    .form-control:focus {
+        border-color: var(--lavender-primary);
+        box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.25);
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: var(--lavender-light);
+        border-color: var(--lavender-primary);
+        color: var(--lavender-dark);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--lavender-primary);
+        border-color: var(--lavender-primary);
+    }
+</style>
+
+{% endblock %}

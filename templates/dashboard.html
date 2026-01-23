@@ -1,0 +1,431 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Dashboard | MediCare Pharmacy{% endblock %}
+
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Section -->
+<div class="welcome-section mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-2" style="color: var(--lavender-dark);">
+                Welcome back, {{ user.username }}! 👋
+            </h2>
+            <p class="text-muted mb-0">Here's what's happening with your pharmacy today.</p>
+        </div>
+        <div>
+            <button class="btn btn-lavender">
+                <i class="bi bi-plus-circle me-2"></i>
+                Quick Action
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <!-- Total Medicines Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-capsule-pill"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Total Medicines</h6>
+                    <h3 class="stat-value">120</h3>
+                    <p class="stat-change positive">
+                        <i class="bi bi-arrow-up"></i> 12% from last month
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Today Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Sales Today</h6>
+                    <h3 class="stat-value">₹5,500</h3>
+                    <p class="stat-change positive">
+                        <i class="bi bi-arrow-up"></i> ₹850 from yesterday
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-warning">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Low Stock Items</h6>
+                    <h3 class="stat-value">5</h3>
+                    <p class="stat-change">
+                        <i class="bi bi-info-circle"></i> Need restock soon
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expired Medicines Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-danger">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-x-circle-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Expired Items</h6>
+                    <h3 class="stat-value">2</h3>
+                    <p class="stat-change negative">
+                        <i class="bi bi-arrow-down"></i> Action required
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Recent Activity -->
+<div class="row g-4 mb-4">
+    <!-- Sales Chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                        <i class="bi bi-graph-up me-2"></i>Sales Overview
+                    </h5>
+                    <select class="form-select form-select-sm" style="width: auto; border-color: var(--lavender-light);">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 3 months</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-placeholder">
+                    <canvas id="salesChart" height="280"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-lightning-charge-fill me-2"></i>Quick Stats
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="quick-stat-item">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Total Customers</span>
+                        <span class="fw-bold" style="color: var(--lavender-primary);">458</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="width: 75%; background: var(--lavender-primary);"></div>
+                    </div>
+                </div>
+
+                <div class="quick-stat-item mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Pending Bills</span>
+                        <span class="fw-bold" style="color: var(--lavender-primary);">12</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="width: 40%; background: var(--lavender-primary);"></div>
+                    </div>
+                </div>
+
+                <div class="quick-stat-item mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Monthly Revenue</span>
+                        <span class="fw-bold" style="color: var(--lavender-primary);">₹1,45,200</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="width: 85%; background: var(--lavender-primary);"></div>
+                    </div>
+                </div>
+
+                <div class="quick-stat-item mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Stock Value</span>
+                        <span class="fw-bold" style="color: var(--lavender-primary);">₹3,25,800</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="width: 92%; background: var(--lavender-primary);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions and Low Stock -->
+<div class="row g-4">
+    <!-- Recent Transactions -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-clock-history me-2"></i>Recent Transactions
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background-color: rgba(139, 95, 191, 0.05);">
+                            <tr>
+                                <th class="border-0 px-4">Bill ID</th>
+                                <th class="border-0">Customer</th>
+                                <th class="border-0">Amount</th>
+                                <th class="border-0">Time</th>
+                                <th class="border-0">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4">#BL-1024</td>
+                                <td>Rajesh Kumar</td>
+                                <td class="fw-bold">₹850</td>
+                                <td>10:45 AM</td>
+                                <td><span class="badge bg-success">Paid</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">#BL-1023</td>
+                                <td>Priya Sharma</td>
+                                <td class="fw-bold">₹1,250</td>
+                                <td>10:30 AM</td>
+                                <td><span class="badge bg-success">Paid</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">#BL-1022</td>
+                                <td>Amit Patel</td>
+                                <td class="fw-bold">₹620</td>
+                                <td>10:15 AM</td>
+                                <td><span class="badge bg-warning">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">#BL-1021</td>
+                                <td>Sneha Reddy</td>
+                                <td class="fw-bold">₹2,100</td>
+                                <td>09:50 AM</td>
+                                <td><span class="badge bg-success">Paid</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">#BL-1020</td>
+                                <td>Vikram Singh</td>
+                                <td class="fw-bold">₹480</td>
+                                <td>09:30 AM</td>
+                                <td><span class="badge bg-success">Paid</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Low Stock Alert
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert-item mb-3 p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1 fw-bold">Paracetamol 500mg</h6>
+                            <p class="mb-0 small text-muted">Current Stock: 15 units</p>
+                        </div>
+                        <button class="btn btn-sm btn-lavender">Reorder</button>
+                    </div>
+                </div>
+
+                <div class="alert-item mb-3 p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1 fw-bold">Amoxicillin 250mg</h6>
+                            <p class="mb-0 small text-muted">Current Stock: 8 units</p>
+                        </div>
+                        <button class="btn btn-sm btn-lavender">Reorder</button>
+                    </div>
+                </div>
+
+                <div class="alert-item mb-3 p-3 rounded" style="background-color: rgba(220, 53, 69, 0.1); border-left: 4px solid #dc3545;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1 fw-bold">Ibuprofen 400mg</h6>
+                            <p class="mb-0 small text-muted">Expired: Jan 15, 2026</p>
+                        </div>
+                        <button class="btn btn-sm btn-danger">Remove</button>
+                    </div>
+                </div>
+
+                <div class="alert-item p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1 fw-bold">Vitamin D3 Capsules</h6>
+                            <p class="mb-0 small text-muted">Current Stock: 12 units</p>
+                        </div>
+                        <button class="btn btn-sm btn-lavender">Reorder</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-lavender {
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-lavender:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(139, 95, 191, 0.4);
+        color: white;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(139, 95, 191, 0.1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(139, 95, 191, 0.15);
+    }
+
+    .stat-card-body {
+        display: flex;
+        gap: 1.5rem;
+        align-items: flex-start;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+    }
+
+    .stat-card-primary .stat-icon {
+        background: linear-gradient(135deg, rgba(139, 95, 191, 0.15) 0%, rgba(163, 131, 196, 0.15) 100%);
+        color: var(--lavender-primary);
+    }
+
+    .stat-card-success .stat-icon {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.15) 0%, rgba(72, 199, 116, 0.15) 100%);
+        color: #28a745;
+    }
+
+    .stat-card-warning .stat-icon {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 214, 79, 0.15) 100%);
+        color: #ffc107;
+    }
+
+    .stat-card-danger .stat-icon {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.15) 0%, rgba(255, 107, 107, 0.15) 100%);
+        color: #dc3545;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: #333;
+    }
+
+    .stat-change {
+        font-size: 0.8rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .stat-change.positive {
+        color: #28a745;
+    }
+
+    .stat-change.negative {
+        color: #dc3545;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    .table td, .table th {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .chart-placeholder {
+        min-height: 280px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(139, 95, 191, 0.05) 0%, rgba(163, 131, 196, 0.05) 100%);
+        border-radius: 12px;
+        color: var(--lavender-primary);
+        font-style: italic;
+    }
+
+    .chart-placeholder::before {
+        content: "📊 Sales chart will be displayed here";
+    }
+</style>
+
+{% endblock %}
