@@ -1,0 +1,266 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}{% if is_edit %}Edit Medicine{% else %}Add Medicine{% endif %} | MediCare Pharmacy{% endblock %}
+
+{% block page_title %}{% if is_edit %}Edit Medicine{% else %}Add New Medicine{% endif %}{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" style="color: var(--lavender-primary);">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'medicine_stock' %}" style="color: var(--lavender-primary);">Medicine Stock</a></li>
+        <li class="breadcrumb-item active">{% if is_edit %}Edit Medicine{% else %}Add Medicine{% endif %}</li>
+    </ol>
+</nav>
+
+<!-- Messages -->
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-{% if is_edit %}pencil-square{% else %}plus-circle-fill{% endif %} me-2"></i>Medicine Information
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{% if is_edit %}{% url 'edit_medicine' medicine.pk %}{% else %}{% url 'add_medicine' %}{% endif %}">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="section-title mb-4">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-info-circle me-2"></i>Basic Information
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Medicine Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="name" required placeholder="e.g., Paracetamol" value="{{ medicine.name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Generic Name</label>
+                            <input type="text" class="form-control lavender-input" name="generic_name" placeholder="e.g., Acetaminophen" value="{{ medicine.generic_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            <select class="form-select lavender-input" name="category" required>
+                                <option value="">Select Category</option>
+                                {% for value, label in categories %}
+                                <option value="{{ value }}" {% if medicine.category == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Manufacturer <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="manufacturer" required placeholder="e.g., Sun Pharma" value="{{ medicine.manufacturer|default:'' }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control lavender-input" name="description" rows="3" placeholder="Medicine description, uses, and precautions...">{{ medicine.description|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Stock & Pricing -->
+                    <div class="section-title mb-4 mt-5">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-currency-rupee me-2"></i>Stock & Pricing
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">{% if is_edit %}Current {% endif %}Quantity <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control lavender-input" name="quantity" required min="0" value="{{ medicine.quantity|default:'0' }}">
+                            {% if is_edit %}
+                            <small class="text-muted">Update quantity to adjust stock</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Reorder Level <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control lavender-input" name="reorder_level" required min="0" value="{{ medicine.reorder_level|default:'10' }}">
+                            <small class="text-muted">Alert when stock reaches this level</small>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Unit Price (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control lavender-input" name="unit_price" required step="0.01" min="0" placeholder="0.00" value="{{ medicine.unit_price|default:'' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Selling Price (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control lavender-input" name="selling_price" required step="0.01" min="0" placeholder="0.00" value="{{ medicine.selling_price|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Batch & Date Information -->
+                    <div class="section-title mb-4 mt-5">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-calendar-check me-2"></i>Batch & Date Information
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Batch Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="batch_number" required placeholder="e.g., BATCH2026001" value="{{ medicine.batch_number|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Manufacturing Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control lavender-input" name="manufacturing_date" required value="{{ medicine.manufacturing_date|date:'Y-m-d'|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Expiry Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control lavender-input" name="expiry_date" required value="{{ medicine.expiry_date|date:'Y-m-d'|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Storage Information -->
+                    <div class="section-title mb-4 mt-5">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-building me-2"></i>Storage Information
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Rack Number</label>
+                            <input type="text" class="form-control lavender-input" name="rack_number" placeholder="e.g., A-12" value="{{ medicine.rack_number|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 mt-5 pt-4 border-top">
+                        <button type="submit" class="btn btn-lavender px-4">
+                            <i class="bi bi-{% if is_edit %}check-circle{% else %}plus-circle{% endif %} me-2"></i>{% if is_edit %}Update Medicine{% else %}Add Medicine{% endif %}
+                        </button>
+                        {% if not is_edit %}
+                        <button type="reset" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'medicine_stock' %}" class="btn btn-outline-danger px-4">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lavender-input {
+        border: 2px solid var(--lavender-light);
+        border-radius: 8px;
+        padding: 0.625rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .lavender-input:focus {
+        border-color: var(--lavender-primary);
+        box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+    }
+
+    .breadcrumb {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: var(--lavender-primary);
+    }
+
+    .breadcrumb-item a {
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--lavender-dark) !important;
+    }
+
+    .btn-lavender {
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-lavender:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(139, 95, 191, 0.4);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        border-radius: 8px;
+        padding: 0.625rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-danger {
+        border: 2px solid #dc3545;
+        color: #dc3545;
+        border-radius: 8px;
+        padding: 0.625rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+        background: #dc3545;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .section-title h6 {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    label {
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,718 @@
+{% extends "user_base.html" %}
+
+{% block title %}User Dashboard | MediCare Pharmacy{% endblock %}
+
+{% block page_title %}User Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Section -->
+<div class="welcome-section mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-2" style="color: var(--lavender-dark);">
+                Welcome back, {{ user.username }}! 👋
+            </h2>
+            <p class="text-muted mb-0">Browse medicines and check stock availability</p>
+        </div>
+        <div>
+            <button class="btn btn-lavender" data-bs-toggle="modal" data-bs-target="#quickOrderModal">
+                <i class="bi bi-cart-plus me-2"></i>
+                Quick Order
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <!-- Available Medicines Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-capsule-pill"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Available Medicines</h6>
+                    <h3 class="stat-value">{{ total_medicines|default:120 }}</h3>
+                    <p class="stat-change">
+                        <i class="bi bi-check-circle"></i> In Stock
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Items Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-warning">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Low Stock Alert</h6>
+                    <h3 class="stat-value">{{ low_stock_count|default:5 }}</h3>
+                    <p class="stat-change">
+                        <i class="bi bi-info-circle"></i> Limited availability
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Orders Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-bag-check-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">My Orders</h6>
+                    <h3 class="stat-value">{{ total_orders|default:12 }}</h3>
+                    <p class="stat-change positive">
+                        <i class="bi bi-arrow-up"></i> 3 this month
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Prescriptions Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-info">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-file-earmark-medical"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Active Prescriptions</h6>
+                    <h3 class="stat-value">{{ active_prescriptions|default:3 }}</h3>
+                    <p class="stat-change">
+                        <i class="bi bi-clock"></i> Ready to order
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medicine Stock Overview and Alert System -->
+<div class="row g-4 mb-4">
+    <!-- Medicine Stock Overview -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                        <i class="bi bi-boxes me-2"></i>Medicine Stock Overview
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm" style="width: auto; border-color: var(--lavender-light);">
+                            <option>All Categories</option>
+                            <option>Tablets</option>
+                            <option>Syrups</option>
+                            <option>Injections</option>
+                            <option>Ointments</option>
+                        </select>
+                        <button class="btn btn-sm btn-lavender" onclick="window.location.href='{% url 'view_medicines' %}'">
+                            <i class="bi bi-eye"></i> View All
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background-color: rgba(139, 95, 191, 0.05);">
+                            <tr>
+                                <th class="border-0 px-4">Medicine Name</th>
+                                <th class="border-0">Category</th>
+                                <th class="border-0">Stock Status</th>
+                                <th class="border-0">Price</th>
+                                <th class="border-0">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if medicines %}
+                                {% for medicine in medicines %}
+                                <tr>
+                                    <td class="px-4">
+                                        <strong>{{ medicine.name }}</strong>
+                                        <br><small class="text-muted">{{ medicine.composition|default:"N/A" }}</small>
+                                    </td>
+                                    <td>{{ medicine.category|default:"General" }}</td>
+                                    <td>
+                                        {% if medicine.quantity > 20 %}
+                                            <span class="badge bg-success">In Stock ({{ medicine.quantity }})</span>
+                                        {% elif medicine.quantity > 10 %}
+                                            <span class="badge bg-warning">Low ({{ medicine.quantity }})</span>
+                                        {% elif medicine.quantity > 0 %}
+                                            <span class="badge bg-danger">Critical ({{ medicine.quantity }})</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Out of Stock</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold">₹{{ medicine.price|default:"0.00" }}</td>
+                                    <td>
+                                        {% if medicine.quantity > 0 %}
+                                            <button class="btn btn-sm btn-lavender">
+                                                <i class="bi bi-cart-plus"></i>
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td class="px-4">Paracetamol 500mg</td>
+                                    <td>Tablet</td>
+                                    <td><span class="badge bg-warning">Low (15)</span></td>
+                                    <td class="fw-bold">₹25.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-lavender">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4">Amoxicillin 250mg</td>
+                                    <td>Capsule</td>
+                                    <td><span class="badge bg-danger">Critical (8)</span></td>
+                                    <td class="fw-bold">₹85.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-lavender">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4">Cough Syrup 100ml</td>
+                                    <td>Syrup</td>
+                                    <td><span class="badge bg-success">In Stock (45)</span></td>
+                                    <td class="fw-bold">₹120.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-lavender">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4">Vitamin D3 Capsules</td>
+                                    <td>Supplement</td>
+                                    <td><span class="badge bg-warning">Low (12)</span></td>
+                                    <td class="fw-bold">₹350.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-lavender">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4">Ibuprofen 400mg</td>
+                                    <td>Tablet</td>
+                                    <td><span class="badge bg-secondary">Out of Stock</span></td>
+                                    <td class="fw-bold">₹45.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-secondary" disabled>
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert System -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Low Stock Alerts
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if low_stock_medicines %}
+                    {% for medicine in low_stock_medicines %}
+                    <div class="alert-item mb-3 p-3 rounded {% if medicine.quantity <= 5 %}critical-alert{% else %}warning-alert{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">{{ medicine.name }}</h6>
+                                <p class="mb-2 small text-muted">Stock: {{ medicine.quantity }} units</p>
+                                {% if medicine.quantity <= 5 %}
+                                    <span class="badge bg-danger mb-2">
+                                        <i class="bi bi-exclamation-circle"></i> Critical Level
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning mb-2">
+                                        <i class="bi bi-info-circle"></i> Low Stock
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="sendStockAlert('{{ medicine.id }}', '{{ medicine.name }}')">
+                                <i class="bi bi-bell-fill"></i> Alert
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert-item mb-3 p-3 rounded warning-alert">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">Paracetamol 500mg</h6>
+                                <p class="mb-2 small text-muted">Stock: 15 units</p>
+                                <span class="badge bg-warning mb-2">
+                                    <i class="bi bi-info-circle"></i> Low Stock
+                                </span>
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="sendStockAlert('1', 'Paracetamol 500mg')">
+                                <i class="bi bi-bell-fill"></i> Alert
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert-item mb-3 p-3 rounded critical-alert">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">Amoxicillin 250mg</h6>
+                                <p class="mb-2 small text-muted">Stock: 8 units</p>
+                                <span class="badge bg-danger mb-2">
+                                    <i class="bi bi-exclamation-circle"></i> Critical Level
+                                </span>
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="sendStockAlert('2', 'Amoxicillin 250mg')">
+                                <i class="bi bi-bell-fill"></i> Alert
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert-item mb-3 p-3 rounded critical-alert">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">Vitamin D3 Capsules</h6>
+                                <p class="mb-2 small text-muted">Stock: 12 units</p>
+                                <span class="badge bg-warning mb-2">
+                                    <i class="bi bi-info-circle"></i> Low Stock
+                                </span>
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="sendStockAlert('3', 'Vitamin D3 Capsules')">
+                                <i class="bi bi-bell-fill"></i> Alert
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="alert alert-info mt-4 border-0" style="background-color: rgba(139, 95, 191, 0.1);">
+                    <p class="mb-0 small">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Click the alert button to notify admin about critical stock levels
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity and Quick Links -->
+<div class="row g-4">
+    <!-- Recent Activity -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-clock-history me-2"></i>Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="activity-item">
+                    <div class="activity-icon bg-success">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h6 class="mb-1">Order Placed Successfully</h6>
+                        <p class="text-muted mb-1 small">Order #ORD-1024 - ₹850</p>
+                        <span class="text-muted small">2 hours ago</span>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon bg-info">
+                        <i class="bi bi-file-earmark-medical"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h6 class="mb-1">Prescription Uploaded</h6>
+                        <p class="text-muted mb-1 small">Prescription #RX-5847</p>
+                        <span class="text-muted small">1 day ago</span>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon bg-warning">
+                        <i class="bi bi-bell"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h6 class="mb-1">Stock Alert Sent</h6>
+                        <p class="text-muted mb-1 small">Amoxicillin 250mg - Low Stock</p>
+                        <span class="text-muted small">2 days ago</span>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon bg-primary">
+                        <i class="bi bi-capsule"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h6 class="mb-1">Medicine Viewed</h6>
+                        <p class="text-muted mb-1 small">Paracetamol 500mg</p>
+                        <span class="text-muted small">3 days ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-lightning-charge-fill me-2"></i>Quick Links
+                </h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'view_medicines' %}" class="quick-link-item">
+                    <div class="quick-link-icon">
+                        <i class="bi bi-capsule"></i>
+                    </div>
+                    <div class="quick-link-content">
+                        <h6>Browse All Medicines</h6>
+                        <p>View complete medicine catalog</p>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+
+                <a href="{% url 'medicine_stock_user' %}" class="quick-link-item">
+                    <div class="quick-link-icon">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                    <div class="quick-link-content">
+                        <h6>Check Stock Status</h6>
+                        <p>Real-time stock availability</p>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+
+                <a href="{% url 'send_alert' %}" class="quick-link-item">
+                    <div class="quick-link-icon">
+                        <i class="bi bi-bell-fill"></i>
+                    </div>
+                    <div class="quick-link-content">
+                        <h6>Send Stock Alert</h6>
+                        <p>Notify admin about low stock</p>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+
+                <a href="#" class="quick-link-item">
+                    <div class="quick-link-icon">
+                        <i class="bi bi-upload"></i>
+                    </div>
+                    <div class="quick-link-content">
+                        <h6>Upload Prescription</h6>
+                        <p>Submit your medical prescription</p>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Order Modal -->
+<div class="modal fade" id="quickOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-cart-plus me-2"></i>Quick Order
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Search Medicine</label>
+                        <input type="text" class="form-control" placeholder="Enter medicine name...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Quantity</label>
+                        <input type="number" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="alert alert-info border-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Prescription required medicines need doctor's prescription
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-lavender">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-lavender {
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-lavender:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(139, 95, 191, 0.4);
+        color: white;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(139, 95, 191, 0.1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(139, 95, 191, 0.15);
+    }
+
+    .stat-card-body {
+        display: flex;
+        gap: 1.5rem;
+        align-items: flex-start;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+    }
+
+    .stat-card-primary .stat-icon {
+        background: linear-gradient(135deg, rgba(139, 95, 191, 0.15) 0%, rgba(163, 131, 196, 0.15) 100%);
+        color: var(--lavender-primary);
+    }
+
+    .stat-card-success .stat-icon {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.15) 0%, rgba(72, 199, 116, 0.15) 100%);
+        color: #28a745;
+    }
+
+    .stat-card-warning .stat-icon {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 214, 79, 0.15) 100%);
+        color: #ffc107;
+    }
+
+    .stat-card-info .stat-icon {
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.15) 0%, rgba(58, 176, 195, 0.15) 100%);
+        color: #17a2b8;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: #333;
+    }
+
+    .stat-change {
+        font-size: 0.8rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: #6c757d;
+    }
+
+    .stat-change.positive {
+        color: #28a745;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    .table td, .table th {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .warning-alert {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-left: 4px solid #ffc107;
+    }
+
+    .critical-alert {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-content h6 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .quick-link-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 0.75rem;
+        background: rgba(139, 95, 191, 0.03);
+        border: 1px solid rgba(139, 95, 191, 0.1);
+    }
+
+    .quick-link-item:hover {
+        background: rgba(139, 95, 191, 0.08);
+        transform: translateX(5px);
+    }
+
+    .quick-link-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .quick-link-content {
+        flex: 1;
+    }
+
+    .quick-link-content h6 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .quick-link-content p {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .quick-link-item > i {
+        color: var(--lavender-primary);
+        font-size: 1.25rem;
+    }
+</style>
+
+<script>
+function sendStockAlert(medicineId, medicineName) {
+    // Show confirmation
+    if (confirm(`Send low stock alert to admin for ${medicineName}?`)) {
+        // Here you would make an AJAX call to your backend
+        // For now, we'll just show a success message
+        
+        // Example AJAX call (uncomment and modify when implementing):
+        /*
+        fetch('{% url "send_alert" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                medicine_id: medicineId,
+                medicine_name: medicineName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Alert sent successfully to admin!');
+            }
+        });
+        */
+        
+        // Temporary success message
+        alert('Alert sent successfully to admin!\n\nMedicine: ' + medicineName + '\nAdmin will be notified about the low stock.');
+    }
+}
+</script>
+
+{% endblock %}

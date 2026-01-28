@@ -1,0 +1,328 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}{% if is_edit %}Edit Staff{% else %}Add Staff{% endif %} | MediCare Pharmacy{% endblock %}
+
+{% block page_title %}{% if is_edit %}Edit Staff Member{% else %}Add New Staff Member{% endif %}{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" style="color: var(--lavender-primary);">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'staff_list' %}" style="color: var(--lavender-primary);">Staff List</a></li>
+        <li class="breadcrumb-item active">{% if is_edit %}Edit Staff{% else %}Add Staff{% endif %}</li>
+    </ol>
+</nav>
+
+<!-- Messages -->
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0" style="color: var(--lavender-dark);">
+                    <i class="bi bi-{% if is_edit %}pencil-square{% else %}person-plus-fill{% endif %} me-2"></i>Staff Information
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{% if is_edit %}{% url 'edit_staff' staff_profile.pk %}{% else %}{% url 'add_staff' %}{% endif %}">
+                    {% csrf_token %}
+                    
+                    <!-- Personal Information -->
+                    <div class="section-title mb-4">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-person-circle me-2"></i>Personal Information
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="first_name" required placeholder="e.g., Rajesh" value="{{ staff_profile.user.first_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="last_name" required placeholder="e.g., Kumar" value="{{ staff_profile.user.last_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control lavender-input" name="email" required placeholder="e.g., rajesh@example.com" value="{{ staff_profile.user.email|default:'' }}">
+                            {% if not is_edit %}
+                            <small class="text-muted">Login credentials will be sent to this email</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control lavender-input" name="phone" required placeholder="e.g., +91 9876543210" value="{{ staff_profile.phone|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Alternate Phone</label>
+                            <input type="tel" class="form-control lavender-input" name="alternate_phone" placeholder="e.g., +91 9876543211" value="{{ staff_profile.alternate_phone|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <div class="section-title mb-4 mt-5">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-geo-alt-fill me-2"></i>Address Information
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Address <span class="text-danger">*</span></label>
+                            <textarea class="form-control lavender-input" name="address" rows="2" required placeholder="Street address">{{ staff_profile.address|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">City <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="city" required placeholder="e.g., Chennai" value="{{ staff_profile.city|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">State <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="state" required placeholder="e.g., Tamil Nadu" value="{{ staff_profile.state|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Pincode <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="pincode" required placeholder="e.g., 600001" value="{{ staff_profile.pincode|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div class="section-title mb-4 mt-5">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-briefcase-fill me-2"></i>Professional Information
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                            <select class="form-select lavender-input" name="role" required>
+                                <option value="">Select Role</option>
+                                {% for value, label in role_choices %}
+                                <option value="{{ value }}" {% if staff_profile.role == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Qualification <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="qualification" required placeholder="e.g., B.Pharm, M.Pharm" value="{{ staff_profile.qualification|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Experience (Years) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control lavender-input" name="experience_years" required min="0" value="{{ staff_profile.experience_years|default:'0' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">License Number</label>
+                            <input type="text" class="form-control lavender-input" name="license_number" placeholder="e.g., PHARM/2024/001" value="{{ staff_profile.license_number|default:'' }}">
+                            <small class="text-muted">For pharmacists only</small>
+                        </div>
+                    </div>
+
+                    <!-- Employment Details -->
+                    <div class="section-title mb-4 mt-5">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-calendar-check me-2"></i>Employment Details
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Date of Joining <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control lavender-input" name="date_of_joining" required value="{{ staff_profile.date_of_joining|date:'Y-m-d'|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Shift <span class="text-danger">*</span></label>
+                            <select class="form-select lavender-input" name="shift" required>
+                                <option value="">Select Shift</option>
+                                {% for value, label in shift_choices %}
+                                <option value="{{ value }}" {% if staff_profile.shift == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Monthly Salary (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control lavender-input" name="salary" required step="0.01" min="0" placeholder="0.00" value="{{ staff_profile.salary|default:'' }}">
+                        </div>
+                        {% if is_edit %}
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                            <select class="form-select lavender-input" name="status" required>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if staff_profile.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <div class="section-title mb-4 mt-5">
+                        <h6 class="fw-bold" style="color: var(--lavender-primary);">
+                            <i class="bi bi-telephone-fill me-2"></i>Emergency Contact
+                        </h6>
+                        <hr style="border-color: var(--lavender-light);">
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Contact Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="emergency_contact_name" required placeholder="e.g., Priya Kumar" value="{{ staff_profile.emergency_contact_name|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Contact Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control lavender-input" name="emergency_contact_phone" required placeholder="e.g., +91 9876543210" value="{{ staff_profile.emergency_contact_phone|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Relation <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control lavender-input" name="emergency_contact_relation" required placeholder="e.g., Spouse, Parent" value="{{ staff_profile.emergency_contact_relation|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Information Note -->
+                    {% if not is_edit %}
+                    <div class="alert alert-info border-0 mb-4" style="background-color: rgba(139, 95, 191, 0.1);">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> A unique username and secure password will be automatically generated and sent to the staff member's email address.
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 mt-5 pt-4 border-top">
+                        <button type="submit" class="btn btn-lavender px-4">
+                            <i class="bi bi-{% if is_edit %}check-circle{% else %}person-plus{% endif %} me-2"></i>{% if is_edit %}Update Staff{% else %}Add Staff{% endif %}
+                        </button>
+                        {% if not is_edit %}
+                        <button type="reset" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'staff_list' %}" class="btn btn-outline-danger px-4">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lavender-input {
+        border: 2px solid var(--lavender-light);
+        border-radius: 8px;
+        padding: 0.625rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .lavender-input:focus {
+        border-color: var(--lavender-primary);
+        box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.15);
+    }
+
+    .breadcrumb {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: var(--lavender-primary);
+    }
+
+    .breadcrumb-item a {
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--lavender-dark) !important;
+    }
+
+    .btn-lavender {
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-lavender:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(139, 95, 191, 0.4);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        border-radius: 8px;
+        padding: 0.625rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-danger {
+        border: 2px solid #dc3545;
+        color: #dc3545;
+        border-radius: 8px;
+        padding: 0.625rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+        background: #dc3545;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .section-title h6 {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    label {
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .alert-info i {
+        color: var(--lavender-primary);
+    }
+</style>
+
+{% endblock %}

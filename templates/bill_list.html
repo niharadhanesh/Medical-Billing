@@ -1,0 +1,280 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Bills - MediCare{% endblock %}
+{% block page_title %}Bills Management{% endblock %}
+
+{% block content %}
+<style>
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+    
+    .stat-card p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+    
+    .stat-card i {
+        font-size: 2.5rem;
+        opacity: 0.3;
+        float: right;
+    }
+    
+    .filters-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .bills-table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table {
+        margin: 0;
+    }
+    
+    .table thead th {
+        background: var(--lavender-primary);
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 1rem;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s;
+    }
+    
+    .table tbody tr:hover {
+        background: #f8f5fc;
+        transform: translateX(5px);
+    }
+    
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .btn-view {
+        background: var(--lavender-primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-view:hover {
+        background: var(--lavender-dark);
+        transform: translateY(-2px);
+    }
+    
+    .new-bill-btn {
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        color: white;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+    }
+    
+    .new-bill-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 95, 191, 0.4);
+        color: white;
+    }
+</style>
+
+<!-- Statistics Cards -->
+<div class="stats-cards">
+    <div class="stat-card">
+        <i class="bi bi-receipt"></i>
+        <p>Total Bills</p>
+        <h3>{{ total_bills }}</h3>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+        <i class="bi bi-currency-rupee"></i>
+        <p>Total Sales</p>
+        <h3>₹{{ total_sales|floatformat:2 }}</h3>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+        <i class="bi bi-calendar-check"></i>
+        <p>Today's Date</p>
+        <h3>{{ 'now'|date:"d M" }}</h3>
+    </div>
+</div>
+
+<!-- Filters Section -->
+<div class="filters-section">
+    <form method="get" class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">Search</label>
+            <input type="text" class="form-control" name="search" placeholder="Bill number, customer..." value="{{ request.GET.search }}">
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select" name="payment_method">
+                <option value="">All</option>
+                <option value="cash" {% if request.GET.payment_method == 'cash' %}selected{% endif %}>Cash</option>
+                <option value="card" {% if request.GET.payment_method == 'card' %}selected{% endif %}>Card</option>
+                <option value="upi" {% if request.GET.payment_method == 'upi' %}selected{% endif %}>UPI</option>
+                <option value="cheque" {% if request.GET.payment_method == 'cheque' %}selected{% endif %}>Cheque</option>
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Date From</label>
+            <input type="date" class="form-control" name="date_from" value="{{ request.GET.date_from }}">
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Date To</label>
+            <input type="date" class="form-control" name="date_to" value="{{ request.GET.date_to }}">
+        </div>
+        
+        <div class="col-md-1 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-funnel-fill"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Bills Table -->
+<div class="bills-table-container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul"></i>
+            All Bills
+        </h5>
+        <a href="{% url 'billing' %}" class="new-bill-btn">
+            <i class="bi bi-plus-circle-fill"></i>
+            New Bill
+        </a>
+    </div>
+    
+    {% if bills %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Bill Number</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr>
+                    <td><strong>{{ bill.bill_number }}</strong></td>
+                    <td>{{ bill.created_at|date:"d M Y, h:i A" }}</td>
+                    <td>
+                        <strong>{{ bill.customer_name }}</strong>
+                        {% if bill.customer_phone %}
+                        <br><small class="text-muted">{{ bill.customer_phone }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ bill.items.count }} item{{ bill.items.count|pluralize }}</td>
+                    <td><strong>₹{{ bill.total_amount }}</strong></td>
+                    <td class="text-capitalize">{{ bill.get_payment_method_display }}</td>
+                    <td>
+                        <span class="status-badge status-{{ bill.status }}">
+                            {{ bill.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'bill_detail' bill.id %}" class="btn btn-view">
+                            <i class="bi bi-eye-fill"></i>
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox" style="font-size: 4rem; opacity: 0.3;"></i>
+        <h5 class="mt-3">No bills found</h5>
+        <p>Start by creating your first bill</p>
+        <a href="{% url 'billing' %}" class="new-bill-btn mt-3">
+            <i class="bi bi-plus-circle-fill"></i>
+            Create New Bill
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

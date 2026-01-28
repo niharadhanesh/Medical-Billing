@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Bill - {{ bill.bill_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            background: white;
+        }
+        
+        .bill-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #333;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px double #333;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .clinic-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #8B5FBF;
+            margin-bottom: 5px;
+        }
+        
+        .clinic-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .clinic-info {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .bill-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-transform: uppercase;
+            color: #8B5FBF;
+        }
+        
+        .bill-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        
+        .info-section {
+            flex: 1;
+        }
+        
+        .info-row {
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 140px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .items-table th {
+            background: #8B5FBF;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #333;
+        }
+        
+        .items-table td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .totals-section {
+            margin-top: 20px;
+            float: right;
+            width: 350px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .total-row.grand-total {
+            background: #8B5FBF;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #8B5FBF;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            clear: both;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #333;
+            font-size: 12px;
+        }
+        
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+        
+        .signature-line {
+            border-top: 2px solid #333;
+            margin-top: 50px;
+            padding-top: 5px;
+        }
+        
+        .notes {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #8B5FBF;
+        }
+        
+        .thank-you {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #8B5FBF;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .bill-container {
+                border: none;
+                padding: 0;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #8B5FBF;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+            z-index: 1000;
+        }
+        
+        .print-button:hover {
+            background: #6B4596;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">
+        <i>🖨</i> Print Bill
+    </button>
+    
+    <div class="bill-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="clinic-name">MediCare Pharmacy</div>
+            <div class="clinic-subtitle">Your Health, Our Priority</div>
+            <div class="clinic-info">
+                123 Medical Street, Health City, State - 123456<br>
+                Phone: +91 1234567890 | Email: info@medicare.com<br>
+                GSTIN: 22AAAAA0000A1Z5 | License No: DL-12345-ABC
+            </div>
+        </div>
+        
+        <!-- Bill Title -->
+        <div class="bill-title">Tax Invoice</div>
+        
+        <!-- Bill & Customer Info -->
+        <div class="bill-info">
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">Bill Number:</span>
+                    <strong>{{ bill.bill_number }}</strong>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date:</span>
+                    {{ bill.created_at|date:"d M Y" }}
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Time:</span>
+                    {{ bill.created_at|date:"h:i A" }}
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">Customer Name:</span>
+                    <strong>{{ bill.customer_name }}</strong>
+                </div>
+                {% if bill.customer_phone %}
+                <div class="info-row">
+                    <span class="info-label">Phone:</span>
+                    {{ bill.customer_phone }}
+                </div>
+                {% endif %}
+                {% if bill.customer.doctor_name %}
+                <div class="info-row">
+                    <span class="info-label">Doctor:</span>
+                    {{ bill.customer.doctor_name }}
+                </div>
+                {% endif %}
+                {% if bill.customer.prescription_number %}
+                <div class="info-row">
+                    <span class="info-label">Prescription No:</span>
+                    {{ bill.customer.prescription_number }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 35%;">Medicine Name</th>
+                    <th style="width: 15%;">Batch No.</th>
+                    <th style="width: 10%;" class="text-center">Qty</th>
+                    <th style="width: 15%;" class="text-right">Price</th>
+                    <th style="width: 20%;" class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in bill.items.all %}
+                <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td><strong>{{ item.medicine_name }}</strong></td>
+                    <td>{{ item.batch_number }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right">₹{{ item.unit_price }}</td>
+                    <td class="text-right"><strong>₹{{ item.total_price }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Totals -->
+        <div class="totals-section">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span>₹{{ bill.subtotal }}</span>
+            </div>
+            {% if bill.discount_amount > 0 %}
+            <div class="total-row">
+                <span>Discount ({{ bill.discount_percentage }}%):</span>
+                <span>- ₹{{ bill.discount_amount }}</span>
+            </div>
+            {% endif %}
+            {% if bill.tax_amount > 0 %}
+            <div class="total-row">
+                <span>Tax/GST ({{ bill.tax_percentage }}%):</span>
+                <span>+ ₹{{ bill.tax_amount }}</span>
+            </div>
+            {% endif %}
+            <div class="total-row grand-total">
+                <span>TOTAL AMOUNT:</span>
+                <span>₹{{ bill.total_amount }}</span>
+            </div>
+        </div>
+        
+        <div style="clear: both;"></div>
+        
+        <!-- Payment Info -->
+        <div class="bill-info" style="margin-top: 30px;">
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">Payment Method:</span>
+                    <strong class="text-capitalize">{{ bill.get_payment_method_display }}</strong>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Amount Paid:</span>
+                    <strong>₹{{ bill.amount_paid }}</strong>
+                </div>
+                {% if bill.amount_due > 0 %}
+                <div class="info-row">
+                    <span class="info-label">Amount Due:</span>
+                    <strong style="color: #dc3545;">₹{{ bill.amount_due }}</strong>
+                </div>
+                {% endif %}
+            </div>
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">Billed By:</span>
+                    {{ bill.created_by.username }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notes -->
+        {% if bill.notes %}
+        <div class="notes">
+            <strong>Notes:</strong><br>
+            {{ bill.notes }}
+        </div>
+        {% endif %}
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                <strong>Terms & Conditions:</strong><br>
+                1. Goods once sold will not be taken back or exchanged.<br>
+                2. Please check the medicines before leaving the pharmacy.<br>
+                3. All disputes subject to local jurisdiction only.<br>
+                4. Prescription medicines sold against valid prescription only.
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-line">Customer Signature</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line">Authorized Signature</div>
+                </div>
+            </div>
+            
+            <div class="thank-you">
+                Thank you for your business!<br>
+                <span style="font-size: 14px;">Get well soon!</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto print on load (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard{% endblock %}</title>
+    <title>{% block title %}User Dashboard{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link
@@ -21,6 +21,8 @@
             --lavender-light: #D4C5E8;
             --lavender-dark: #6B4596;
             --lavender-accent: #B794D4;
+            --user-gradient-start: #9b6fd6;
+            --user-gradient-end: #7b4db3;
             --sidebar-width: 280px;
         }
 
@@ -42,7 +44,7 @@
         .sidebar {
             min-width: var(--sidebar-width);
             max-width: var(--sidebar-width);
-            background: linear-gradient(180deg, var(--lavender-primary) 0%, var(--lavender-dark) 100%);
+            background: linear-gradient(180deg, var(--user-gradient-start) 0%, var(--user-gradient-end) 100%);
             color: white;
             min-height: 100vh;
             position: fixed;
@@ -88,6 +90,7 @@
             justify-content: center;
             margin: 0 auto 0.5rem;
             font-size: 1.5rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
         }
 
         .sidebar-header .user-name {
@@ -100,6 +103,11 @@
             font-size: 0.75rem;
             opacity: 0.8;
             margin: 0;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 0.5rem;
         }
 
         .sidebar-menu {
@@ -140,6 +148,26 @@
             background: rgba(255, 255, 255, 0.15);
             color: white !important;
             border-left-color: white;
+        }
+
+        .alert-badge {
+            background: #dc3545;
+            color: white;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-left: auto;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
         }
 
         .sidebar-footer {
@@ -374,68 +402,70 @@
             </h4>
             <div class="user-info">
                 <div class="user-avatar">
-                    <i class="bi bi-person-fill"></i>
+                    <i class="bi bi-person-circle"></i>
                 </div>
-                <p class="user-name">{{ user.username|default:"Admin" }}</p>
-                <p class="user-role">Administrator</p>
+                <p class="user-name">{{ user.username|default:"User" }}</p>
+                <p class="user-role">Customer Portal</p>
             </div>
         </div>
 
         <!-- Sidebar Menu -->
         <ul class="nav flex-column sidebar-menu">
             <li class="nav-item">
-                <a href="{% url 'dashboard' %}" class="nav-link active">
+                <a href="{% url 'user_dashboard' %}" class="nav-link active">
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'add_medicine' %}" class="nav-link">
-                    <i class="bi bi-plus-circle-fill"></i>
-                    <span>Add Medicine</span>
+                <a href="{% url 'view_medicines' %}" class="nav-link">
+                    <i class="bi bi-capsule"></i>
+                    <span>View Medicines</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'medicine_stock' %}" class="nav-link">
+                <a href="{% url 'medicine_stock_user' %}" class="nav-link">
                     <i class="bi bi-boxes"></i>
                     <span>Medicine Stock</span>
+                    {% if low_stock_count > 0 %}
+                    <span class="alert-badge">{{ low_stock_count }}</span>
+                    {% endif %}
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'billing' %}" class="nav-link">
-                    <i class="bi bi-receipt-cutoff"></i>
-                    <span>Billing</span>
-                </a>
-            </li>
-             <li class="nav-item">
-                <a href="{% url 'bill_list' %}" class="nav-link">
-                    <i class="bi bi-receipt-cutoff"></i>
-                    <span>Bill List</span>
-                </a>
-            </li>
-           
-            <!-- <li class="nav-item">
-                <a href="{% url 'add_staff' %}" class="nav-link">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Add Staff</span>
-                </a>
-            </li>
-              <li class="nav-item">
-                <a href="{% url 'staff_list' %}" class="nav-link">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Staff List</span>
-                </a>
-            </li> -->
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-graph-up-arrow"></i>
-                    <span>Reports</span>
+                <a href="{% url 'send_alert' %}" class="nav-link">
+                    <i class="bi bi-bell-fill"></i>
+                    <span>Send Stock Alert</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">
-                    <i class="bi bi-gear-fill"></i>
-                    <span>Settings</span>
+                    <i class="bi bi-cart-check-fill"></i>
+                    <span>My Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-receipt"></i>
+                    <span>My Prescriptions</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Order History</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-person-fill"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-chat-dots-fill"></i>
+                    <span>Support</span>
                 </a>
             </li>
         </ul>
@@ -453,15 +483,15 @@
     <div class="main-wrapper">
         <!-- Top Navbar -->
         <div class="top-navbar">
-            <h5>{% block page_title %}Dashboard{% endblock %}</h5>
+            <h5>{% block page_title %}User Dashboard{% endblock %}</h5>
             <div class="top-navbar-actions">
                 <button class="notification-btn">
                     <i class="bi bi-bell-fill"></i>
-                    <span class="notification-badge">3</span>
+                    <span class="notification-badge">{{ notification_count|default:0 }}</span>
                 </button>
                 <button class="notification-btn">
-                    <i class="bi bi-envelope-fill"></i>
-                    <span class="notification-badge">5</span>
+                    <i class="bi bi-chat-dots-fill"></i>
+                    <span class="notification-badge">{{ message_count|default:0 }}</span>
                 </button>
             </div>
         </div>

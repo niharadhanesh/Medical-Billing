@@ -1,0 +1,746 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Billing - MediCare{% endblock %}
+{% block page_title %}Billing{% endblock %}
+
+{% block content %}
+<style>
+    .billing-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .search-section {
+        background: linear-gradient(135deg, var(--lavender-light) 0%, #f8f5fc 100%);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .medicine-search-box {
+        position: relative;
+    }
+    
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+    
+    .search-results.active {
+        display: block;
+    }
+    
+    .search-result-item {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .search-result-item:hover {
+        background: var(--lavender-light);
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .medicine-name {
+        font-weight: 600;
+        color: var(--lavender-dark);
+    }
+    
+    .medicine-details {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+    
+    .bill-items-table {
+        margin: 2rem 0;
+    }
+    
+    .bill-items-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .bill-items-table th {
+        background: var(--lavender-primary);
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+    }
+    
+    .bill-items-table td {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .bill-items-table tbody tr:hover {
+        background: #f8f5fc;
+    }
+    
+    .quantity-input {
+        width: 80px;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+    }
+    
+    .remove-btn {
+        color: #dc3545;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.25rem;
+        transition: all 0.2s;
+    }
+    
+    .remove-btn:hover {
+        color: #c82333;
+        transform: scale(1.2);
+    }
+    
+    .billing-summary {
+        background: linear-gradient(135deg, var(--lavender-light) 0%, #f8f5fc 100%);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 2rem;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(139, 95, 191, 0.1);
+    }
+    
+    .summary-row:last-child {
+        border-bottom: none;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--lavender-dark);
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        border-top: 2px solid var(--lavender-primary);
+    }
+    
+    .summary-label {
+        font-weight: 600;
+    }
+    
+    .summary-value {
+        font-weight: 700;
+        color: var(--lavender-primary);
+    }
+    
+    .payment-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: white;
+        border: 2px solid var(--lavender-light);
+        border-radius: 8px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--lavender-dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--lavender-primary);
+        box-shadow: 0 0 0 0.2rem rgba(139, 95, 191, 0.25);
+    }
+    
+    .btn-generate-bill {
+        background: linear-gradient(135deg, var(--lavender-primary) 0%, var(--lavender-secondary) 100%);
+        color: white;
+        padding: 0.875rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(139, 95, 191, 0.3);
+    }
+    
+    .btn-generate-bill:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 95, 191, 0.4);
+    }
+    
+    .btn-clear-all {
+        background: #dc3545;
+        color: white;
+        padding: 0.875rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+    
+    .btn-clear-all:hover {
+        background: #c82333;
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #999;
+    }
+    
+    .empty-cart i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+    
+    .badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .stock-badge {
+        background: #28a745;
+        color: white;
+    }
+    
+    .low-stock-badge {
+        background: #ffc107;
+        color: #000;
+    }
+    
+    @media (max-width: 768px) {
+        .billing-container {
+            padding: 1rem;
+        }
+        
+        .bill-items-table {
+            overflow-x: auto;
+        }
+        
+        .summary-row {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<div class="billing-container">
+    <!-- Medicine Search Section -->
+    <div class="search-section">
+        <h5 class="mb-3">
+            <i class="bi bi-search"></i>
+            Search Medicine
+        </h5>
+        <div class="medicine-search-box">
+            <input 
+                type="text" 
+                class="form-control form-control-lg" 
+                id="medicineSearch" 
+                placeholder="Search by medicine name, generic name, or batch number..."
+                autocomplete="off"
+            >
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- Bill Items Table -->
+    <div class="bill-items-section">
+        <h5 class="mb-3">
+            <i class="bi bi-cart-fill"></i>
+            Bill Items
+            <span class="badge bg-primary ms-2" id="itemCount">0 items</span>
+        </h5>
+        
+        <div id="billItemsContainer">
+            <div class="empty-cart">
+                <i class="bi bi-cart-x"></i>
+                <h5>No items added yet</h5>
+                <p>Search and add medicines to start billing</p>
+            </div>
+        </div>
+        
+        <table class="table bill-items-table" id="billItemsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 30%;">Medicine</th>
+                    <th style="width: 15%;">Batch</th>
+                    <th style="width: 10%;">Price</th>
+                    <th style="width: 15%;">Quantity</th>
+                    <th style="width: 15%;">Total</th>
+                    <th style="width: 10%;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="billItemsBody">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Billing Summary -->
+    <div class="billing-summary" id="billingSummary" style="display: none;">
+        <h5 class="mb-3">
+            <i class="bi bi-calculator"></i>
+            Billing Summary
+        </h5>
+        
+        <div class="summary-row">
+            <span class="summary-label">Subtotal:</span>
+            <span class="summary-value">₹<span id="subtotal">0.00</span></span>
+        </div>
+        
+        <div class="summary-row">
+            <span class="summary-label">
+                Discount:
+                <input 
+                    type="number" 
+                    id="discountPercentage" 
+                    class="form-control form-control-sm d-inline-block" 
+                    style="width: 80px; margin-left: 10px;"
+                    min="0" 
+                    max="100" 
+                    step="0.01"
+                    value="0"
+                    placeholder="%"
+                >
+                %
+            </span>
+            <span class="summary-value">- ₹<span id="discountAmount">0.00</span></span>
+        </div>
+        
+        <div class="summary-row">
+            <span class="summary-label">
+                Tax (GST):
+                <input 
+                    type="number" 
+                    id="taxPercentage" 
+                    class="form-control form-control-sm d-inline-block" 
+                    style="width: 80px; margin-left: 10px;"
+                    min="0" 
+                    max="100" 
+                    step="0.01"
+                    value="0"
+                    placeholder="%"
+                >
+                %
+            </span>
+            <span class="summary-value">+ ₹<span id="taxAmount">0.00</span></span>
+        </div>
+        
+        <div class="summary-row">
+            <span class="summary-label">Total Amount:</span>
+            <span class="summary-value">₹<span id="totalAmount">0.00</span></span>
+        </div>
+    </div>
+
+    <!-- Customer & Payment Details -->
+    <div class="payment-section" id="paymentSection" style="display: none;">
+        <h5 class="mb-3">
+            <i class="bi bi-person-fill"></i>
+            Customer & Payment Details
+        </h5>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="customerName" placeholder="Enter customer name">
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="customerPhone" placeholder="Enter phone number">
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Payment Method</label>
+                <select class="form-select" id="paymentMethod">
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="upi">UPI</option>
+                    <option value="cheque">Cheque</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Amount Paid</label>
+                <input type="number" class="form-control" id="amountPaid" step="0.01" min="0" value="0">
+            </div>
+            
+            <div class="col-md-12 mb-3">
+                <label class="form-label">Doctor Name (Optional)</label>
+                <input type="text" class="form-control" id="doctorName" placeholder="Prescribing doctor name">
+            </div>
+            
+            <div class="col-md-12 mb-3">
+                <label class="form-label">Prescription Number (Optional)</label>
+                <input type="text" class="form-control" id="prescriptionNumber" placeholder="Prescription number">
+            </div>
+            
+            <div class="col-md-12 mb-3">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" id="billNotes" rows="2" placeholder="Additional notes..."></textarea>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-3 justify-content-end mt-4">
+            <button class="btn btn-clear-all" onclick="clearBill()">
+                <i class="bi bi-x-circle"></i>
+                Clear All
+            </button>
+            <button class="btn btn-generate-bill" onclick="generateBill()">
+                <i class="bi bi-receipt"></i>
+                Generate Bill
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let billItems = [];
+let debounceTimer;
+
+// Search medicine with debouncing
+document.getElementById('medicineSearch').addEventListener('input', function(e) {
+    const query = e.target.value.trim();
+    
+    clearTimeout(debounceTimer);
+    
+    if (query.length < 2) {
+        document.getElementById('searchResults').classList.remove('active');
+        return;
+    }
+    
+    debounceTimer = setTimeout(() => {
+        searchMedicine(query);
+    }, 300);
+});
+
+// Close search results when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.medicine-search-box')) {
+        document.getElementById('searchResults').classList.remove('active');
+    }
+});
+
+function searchMedicine(query) {
+    fetch(`/api/search-medicine/?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            displaySearchResults(data.medicines);
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+        });
+}
+
+function displaySearchResults(medicines) {
+    const resultsDiv = document.getElementById('searchResults');
+    
+    if (medicines.length === 0) {
+        resultsDiv.innerHTML = '<div class="search-result-item text-muted">No medicines found</div>';
+        resultsDiv.classList.add('active');
+        return;
+    }
+    
+    let html = '';
+    medicines.forEach(medicine => {
+        const stockBadge = medicine.available_quantity > 10 
+            ? `<span class="badge stock-badge">${medicine.available_quantity} in stock</span>`
+            : `<span class="badge low-stock-badge">${medicine.available_quantity} left</span>`;
+        
+        html += `
+            <div class="search-result-item" onclick='addMedicineToCart(${JSON.stringify(medicine)})'>
+                <div class="medicine-name">${medicine.name}</div>
+                <div class="medicine-details">
+                    ${medicine.generic_name} | ${medicine.category} | Batch: ${medicine.batch_number} | 
+                    ₹${medicine.selling_price} | ${stockBadge}
+                </div>
+            </div>
+        `;
+    });
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.classList.add('active');
+}
+
+function addMedicineToCart(medicine) {
+    // Check if medicine already in cart
+    const existingItem = billItems.find(item => item.medicine_id === medicine.id);
+    
+    if (existingItem) {
+        if (existingItem.quantity < medicine.available_quantity) {
+            existingItem.quantity++;
+            updateBillDisplay();
+        } else {
+            alert('Cannot add more. Insufficient stock!');
+        }
+    } else {
+        billItems.push({
+            medicine_id: medicine.id,
+            name: medicine.name,
+            batch_number: medicine.batch_number,
+            unit_price: parseFloat(medicine.selling_price),
+            quantity: 1,
+            available_quantity: medicine.available_quantity
+        });
+        updateBillDisplay();
+    }
+    
+    // Clear search
+    document.getElementById('medicineSearch').value = '';
+    document.getElementById('searchResults').classList.remove('active');
+}
+
+function updateQuantity(index, change) {
+    const item = billItems[index];
+    const newQuantity = item.quantity + change;
+    
+    if (newQuantity < 1) {
+        removeItem(index);
+        return;
+    }
+    
+    if (newQuantity > item.available_quantity) {
+        alert('Cannot add more. Insufficient stock!');
+        return;
+    }
+    
+    item.quantity = newQuantity;
+    updateBillDisplay();
+}
+
+function setQuantity(index, value) {
+    const item = billItems[index];
+    const quantity = parseInt(value) || 1;
+    
+    if (quantity < 1) {
+        removeItem(index);
+        return;
+    }
+    
+    if (quantity > item.available_quantity) {
+        alert(`Only ${item.available_quantity} available in stock!`);
+        item.quantity = item.available_quantity;
+    } else {
+        item.quantity = quantity;
+    }
+    
+    updateBillDisplay();
+}
+
+function removeItem(index) {
+    if (confirm('Remove this item from bill?')) {
+        billItems.splice(index, 1);
+        updateBillDisplay();
+    }
+}
+
+function updateBillDisplay() {
+    const itemCount = document.getElementById('itemCount');
+    const billItemsContainer = document.getElementById('billItemsContainer');
+    const billItemsTable = document.getElementById('billItemsTable');
+    const billItemsBody = document.getElementById('billItemsBody');
+    const billingSummary = document.getElementById('billingSummary');
+    const paymentSection = document.getElementById('paymentSection');
+    
+    if (billItems.length === 0) {
+        itemCount.textContent = '0 items';
+        billItemsContainer.style.display = 'block';
+        billItemsTable.style.display = 'none';
+        billingSummary.style.display = 'none';
+        paymentSection.style.display = 'none';
+        return;
+    }
+    
+    itemCount.textContent = `${billItems.length} item${billItems.length > 1 ? 's' : ''}`;
+    billItemsContainer.style.display = 'none';
+    billItemsTable.style.display = 'table';
+    billingSummary.style.display = 'block';
+    paymentSection.style.display = 'block';
+    
+    let html = '';
+    billItems.forEach((item, index) => {
+        const total = item.quantity * item.unit_price;
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.batch_number}</td>
+                <td>₹${item.unit_price.toFixed(2)}</td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(${index}, -1)">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <input 
+                            type="number" 
+                            class="quantity-input" 
+                            value="${item.quantity}"
+                            min="1"
+                            max="${item.available_quantity}"
+                            onchange="setQuantity(${index}, this.value)"
+                        >
+                        <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(${index}, 1)">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                </td>
+                <td><strong>₹${total.toFixed(2)}</strong></td>
+                <td>
+                    <button class="remove-btn" onclick="removeItem(${index})">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    billItemsBody.innerHTML = html;
+    calculateTotals();
+}
+
+function calculateTotals() {
+    // Calculate subtotal
+    const subtotal = billItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+    
+    // Get discount and tax percentages
+    const discountPercentage = parseFloat(document.getElementById('discountPercentage').value) || 0;
+    const taxPercentage = parseFloat(document.getElementById('taxPercentage').value) || 0;
+    
+    // Calculate amounts
+    const discountAmount = (subtotal * discountPercentage) / 100;
+    const amountAfterDiscount = subtotal - discountAmount;
+    const taxAmount = (amountAfterDiscount * taxPercentage) / 100;
+    const totalAmount = amountAfterDiscount + taxAmount;
+    
+    // Update display
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('discountAmount').textContent = discountAmount.toFixed(2);
+    document.getElementById('taxAmount').textContent = taxAmount.toFixed(2);
+    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+    
+    // Set amount paid to total by default
+    if (!document.getElementById('amountPaid').value) {
+        document.getElementById('amountPaid').value = totalAmount.toFixed(2);
+    }
+}
+
+// Recalculate on discount/tax change
+document.getElementById('discountPercentage').addEventListener('input', calculateTotals);
+document.getElementById('taxPercentage').addEventListener('input', calculateTotals);
+
+function clearBill() {
+    if (confirm('Are you sure you want to clear the entire bill?')) {
+        billItems = [];
+        updateBillDisplay();
+        
+        // Clear form fields
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerPhone').value = '';
+        document.getElementById('doctorName').value = '';
+        document.getElementById('prescriptionNumber').value = '';
+        document.getElementById('billNotes').value = '';
+        document.getElementById('paymentMethod').value = 'cash';
+        document.getElementById('amountPaid').value = '0';
+        document.getElementById('discountPercentage').value = '0';
+        document.getElementById('taxPercentage').value = '0';
+    }
+}
+
+function generateBill() {
+    if (billItems.length === 0) {
+        alert('Please add at least one item to the bill');
+        return;
+    }
+    
+    const customerName = document.getElementById('customerName').value.trim();
+    if (!customerName) {
+        alert('Please enter customer name');
+        document.getElementById('customerName').focus();
+        return;
+    }
+    
+    const billData = {
+        items: billItems,
+        customer_name: customerName,
+        customer_phone: document.getElementById('customerPhone').value.trim(),
+        doctor_name: document.getElementById('doctorName').value.trim(),
+        prescription_number: document.getElementById('prescriptionNumber').value.trim(),
+        subtotal: parseFloat(document.getElementById('subtotal').textContent),
+        discount_percentage: parseFloat(document.getElementById('discountPercentage').value) || 0,
+        tax_percentage: parseFloat(document.getElementById('taxPercentage').value) || 0,
+        payment_method: document.getElementById('paymentMethod').value,
+        amount_paid: parseFloat(document.getElementById('amountPaid').value) || 0,
+        notes: document.getElementById('billNotes').value.trim()
+    };
+    
+    // Show loading
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
+    btn.disabled = true;
+    
+    fetch('/api/create-bill/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(billData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Bill generated successfully!');
+            window.location.href = data.redirect_url;
+        } else {
+            alert('Error: ' + data.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while generating the bill');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
